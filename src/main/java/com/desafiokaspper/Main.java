@@ -2,24 +2,41 @@ package com.desafiokaspper;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.UUID;
 
 // Classe Produto que define as propriedades do produto
 class Product {
+    private static int contador = 1; // Contador global e estático
+    int id;
     String name;
     double price;
     int quantity;
 
     // Construtor para inicializar um produto
     Product(String name, double price, int quantity) {
+        this.id = contador++; // Gera um ID único sequencial
         this.name = name;
         this.price = price;
         this.quantity = quantity;
     }
+    public int getId() {
+        return id;
+    }
 
+
+    // add amount
+    public void updateQuantity(int amount) {
+        this.quantity += amount; // Atualiza a quantidade (soma ou subtrai)
+
+        // Garante que a quantidade nunca fique negativa
+        if (this.quantity < 0) {
+            this.quantity = 0;
+        }
+    }
     // Método para exibir as informações do produto
     @Override
     public String toString() {
-        return name + " - R$ " + price + " (Qtd: " + quantity + ")";
+        return "ID: " + id +", Nome: " +  name + " - R$ " + price + " (Qtd: " + quantity + ")";
     }
 }
 
@@ -41,9 +58,9 @@ class Stock {
     }
 
     // Método para remover um produto do estoque
-    void removeProduct(String name) {
+    void removeProduct(int id) {
         for (int i = 0; i < products.size(); i++) {
-            if (products.get(i).name.equalsIgnoreCase(name)) {
+            if (products.get(i).getId() == id) {
                 products.remove(i);
                 System.out.println("Produto removido!");
                 return;
@@ -53,10 +70,10 @@ class Stock {
     }
 
     // Método para atualizar a quantidade de um produto no estoque
-    void updateProductQuantity(String name, int newQuantity) {
+    void updateProductQuantity(int id, int newQuantity) {
         for (Product p : products) {
-            if (p.name.equalsIgnoreCase(name)) {
-                p.quantity = newQuantity;
+            if (p.getId() == id) {
+                p.updateQuantity(newQuantity);
                 System.out.println("Quantidade do produto atualizada!");
                 return;
             }
@@ -121,20 +138,36 @@ public class Main {
                 stock.addProduct(product);
             } else if (option == 2) {
                 // Remover Produto
-                System.out.print("Digite o nome do produto para remover: ");
-                String nameToRemove = scanner.nextLine();
-                stock.removeProduct(nameToRemove);
+                System.out.print("Digite o ID do produto para remover: ");
+                int idToRemove = scanner.nextInt();
+                stock.removeProduct(idToRemove);
             } else if (option == 3) {
                 // Exibir Estoque
                 stock.displayStock();
-            } else if (option == 4) {
+            }  else if (option == 4) {
                 // Atualizar Quantidade de Produto
-                System.out.print("Digite o nome do produto para atualizar a quantidade: ");
-                String nameToUpdate = scanner.nextLine();
-                System.out.print("Digite a nova quantidade: ");
-                int newQuantity = scanner.nextInt();
-                stock.updateProductQuantity(nameToUpdate, newQuantity);
-            } else if (option == 5) {
+                System.out.print("Digite o ID do produto para atualizar a quantidade: ");
+                int idToUpdate = scanner.nextInt();
+
+                System.out.print("Digite o valor a adicionar ou remover (use número negativo para remover): ");
+                int amount = scanner.nextInt();
+
+                boolean found = false;
+                for (Product p : stock.products) {
+                    if (p.getId() == idToUpdate) {
+                        p.updateQuantity(amount); // Agora este método existe!
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    System.out.println("Produto não encontrado!");
+                }
+
+
+
+        } else if (option == 5) {
                 // Calcular Valor Total do Estoque
                 double totalValue = stock.calculateTotalValue();
                 System.out.println("Valor total do estoque: R$ " + totalValue);
